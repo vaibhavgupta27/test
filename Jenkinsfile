@@ -1,7 +1,7 @@
 #!groovy
 library identifier: 'supreme-broccoli@ansicolor', retriever: modernSCM(
         [$class: 'GitSCMSource',
-         remote: 'https://github.com/shivanshthapliyal/supreme-broccoli'])
+         remote: 'https://github.com/vaibhavgupta27/test/'])
 pipeline {
    agent any
     options{
