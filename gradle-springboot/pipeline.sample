@@ -1,0 +1,49 @@
+//@Library('my-shared-library') _
+
+pipeline {
+    agent any 
+    environment {
+        APP_NAME = 'springboot'
+        CONTAINER_PORT = '8000'
+        HOST_PORT = '8000'
+        GIT_CRED_ID = 'github-ssh-key'
+        REPO_URL = 'https://github.com/vaibhavgupta27/test'
+    }
+    stages {
+        
+        stage('Git Checkout') {
+            agent any 
+            steps {
+                checkout([
+	                $class: 'GitSCM', 
+	                branches: [[name: '*/master']],  
+	                userRemoteConfigs: [[credentialsId: GIT_CRED_ID, url: REPO_URL]]
+	                ])
+	           sh "ls -l"
+            }
+        }
+        
+        stage('Gradle Build') {
+            agent any
+            steps {
+                sh "gradle clean build"
+            }
+        }
+        
+        stage('Package Code') {
+            agent any
+            steps {
+                sh "docker build -t \${APP_NAME}:\${BUILD_NUMBER} ."
+            }
+        }
+        
+        stage('Deploy App') {
+            agent any
+            steps {
+                sh "docker ps -a"
+                sh "docker run -tid -p \${HOST_PORT}:\${CONTAINER_PORT} --name \${APP_NAME} \${APP_NAME}:\${BUILD_NUMBER}"
+                sh 'echo "App URL: http://localhost:\${HOST_PORT}"'
+            }
+        }
+    }
+}
